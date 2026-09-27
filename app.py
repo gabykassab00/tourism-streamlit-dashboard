@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 st.title("Tourism Dashboard")
+
 st.write(
     """
     This dashboard explores tourism development across towns using the Tourism Index
@@ -11,12 +12,18 @@ st.write(
     of towns and see how tourism infrastructure relates to tourism development.
     """
 )
+
+# Load dataset
 df = pd.read_csv("dataset.csv")
 
+# -----------------------------
+# Interaction 1: Facility type
+# -----------------------------
 facility = st.selectbox(
     "Choose a tourism facility",
     ["Hotels", "Cafes", "Restaurants", "Guest Houses"]
 )
+
 facility_columns = {
     "Hotels": "Total number of hotels",
     "Cafes": "Total number of cafes",
@@ -37,6 +44,9 @@ with st.expander("Why use the facility dropdown?"):
         """
     )
 
+# -----------------------------
+# Interaction 2: Availability
+# -----------------------------
 availability = st.radio(
     f"Show towns based on {facility.lower()} availability",
     ["All towns", f"With {facility}", f"Without {facility}"]
@@ -51,8 +61,6 @@ elif availability == f"Without {facility}":
 else:
     filtered_df = df.copy()
 
-
-
 with st.expander("Why use the availability filter?"):
     st.write(
         """
@@ -66,21 +74,17 @@ with st.expander("Why use the availability filter?"):
         """
     )
 
-
-
-
-
+# -----------------------------
+# Visualization 1: Histogram
+# -----------------------------
 fig = px.histogram(
     filtered_df,
     x="Tourism Index",
     nbins=10,
-    title="Distribution of Tourism Index"
+    title=f"Distribution of Tourism Index - {availability}"
 )
 
-
 st.plotly_chart(fig, use_container_width=True)
-
-
 
 st.subheader("Insight 1")
 
@@ -93,32 +97,32 @@ st.write(
     """
 )
 
+# --------------------------------------
+# Visualization 2: With vs Without
+# --------------------------------------
+comparison_df = df.copy()
 
-
-
-
-filtered_df = filtered_df.copy()
-filtered_df["Selection"] = availability
+comparison_df["Facility Status"] = comparison_df[selected_column].apply(
+    lambda x: f"With {facility}" if x > 0 else f"Without {facility}"
+)
 
 fig2 = px.box(
-    filtered_df,
-    x="Selection",
+    comparison_df,
+    x="Facility Status",
     y="Tourism Index",
     points="all",
-    title=f"Tourism Index for {availability}"
+    title=f"Tourism Index: With vs Without {facility}"
 )
 
 st.plotly_chart(fig2, use_container_width=True)
 
-
-
 st.subheader("Insight 2")
 
 st.write(
-    """
-    Comparing towns with and without the selected tourism facility helps show
-    whether tourism infrastructure is associated with stronger Tourism Index values.
-    This makes it easier to identify differences between towns with more developed
-    tourism services and those with fewer facilities.
+    f"""
+    The chart compares towns with {facility.lower()} to towns without
+    {facility.lower()}. This helps show whether the presence of the selected tourism
+    facility is associated with differences in Tourism Index values and makes the
+    comparison between the two groups more direct.
     """
 )
